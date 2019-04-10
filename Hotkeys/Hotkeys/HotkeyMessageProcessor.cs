@@ -162,9 +162,9 @@ namespace Hotkeys
 		{
 			if (m.Msg == WM_HOTKEY_MSG)
 			{
-				if (_hotkeys.TryGetValue(m.WParam.ToInt32(), out Hotkey chord))
+				if (_hotkeys.TryGetValue(m.WParam.ToInt32(), out Hotkey hotkey))
 				{
-					exec.InvokeHotkey(chord);
+					exec.InvokeHotkey(hotkey, Clipboard.GetText() ?? "");
 				}
 			}
 			else

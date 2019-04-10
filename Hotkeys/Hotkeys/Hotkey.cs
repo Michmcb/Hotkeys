@@ -95,23 +95,23 @@ namespace Hotkeys
 		/// Otherwise, the HotkeyExecutor will be queried for an additional keystroke to match one of this Hotkey's chords.
 		/// </summary>
 		/// <param name="hotkeyExecutor">The HotkeyExecutor used to query for a chord. Not required if this Hotkey only has one chord.</param>
-		public Error.Proc Proc(HotkeyExecutor hotkeyExecutor)
+		public Error.Proc Proc(HotkeyExecutor hotkeyExecutor, string clipboard)
 		{
 			if (_singleChord != null)
 			{
-				return ProcHotkey(_singleChord);
+				return ProcChord(_singleChord, clipboard);
 			}
 			else
 			{
 				Chord ch = hotkeyExecutor.GetChord(this);
-				return ProcHotkey(ch);
+				return ProcChord(ch, clipboard);
 			}
 		}
 		/// <summary>
 		/// Invokes the specified chord.
 		/// </summary>
 		/// <param name="ch">The chord to invoke</param>
-		private static Error.Proc ProcHotkey(Chord ch)
+		private static Error.Proc ProcChord(Chord ch, string clipboard)
 		{
 			PromptResponse[] prs = null;
 			if (ch.NeedsPrompt)
@@ -129,7 +129,7 @@ namespace Hotkeys
 					prs[i] = new PromptResponse() { Key = ch.Prompts[i].Key, Response = vp.GetAnswer() };
 				}
 			}
-			return ch.Proc(prs);
+			return ch.Proc(clipboard, prs);
 		}
 		public override string ToString()
 		{

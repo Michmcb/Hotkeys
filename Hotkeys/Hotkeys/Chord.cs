@@ -43,7 +43,7 @@ namespace Hotkeys
 		/// Invokes the chord
 		/// </summary>
 		/// <param name="promptKeyValues">Any responses to prompts required by this chord</param>
-		public virtual Error.Proc Proc(params PromptResponse[] promptKeyValues)
+		public virtual Error.Proc Proc(string clipboard, params PromptResponse[] promptKeyValues)
 		{
 			if (!System.IO.File.Exists(Exec))
 			{
@@ -52,7 +52,7 @@ namespace Hotkeys
 			StringBuilder args;
 			if (_hasClipboard)
 			{
-				args = new StringBuilder(Args?.Replace("{clipboard}", Clipboard.GetText() ?? ""));
+				args = new StringBuilder(Args?.Replace("{clipboard}", clipboard));
 			}
 			else
 			{

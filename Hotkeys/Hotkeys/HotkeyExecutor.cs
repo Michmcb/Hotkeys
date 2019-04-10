@@ -10,13 +10,13 @@ namespace Hotkeys
 	public class HotkeyExecutor : IDisposable
 	{
 		private ManualResetEventSlim _proc;
-		private ConcurrentQueue<Hotkey> _hotkeys;
+		private ConcurrentQueue<Tuple<Hotkey, string>> _hotkeys;
 		private HotkeyMessageProcessor _hotkeyMsgProc;
 		private bool _isWorking;
 
 		public HotkeyExecutor(HotkeyMessageProcessor hmp)
 		{
-			_hotkeys = new ConcurrentQueue<Hotkey>();
+			_hotkeys = new ConcurrentQueue<Tuple<Hotkey, string>>();
 			_proc = new ManualResetEventSlim(false, 0);
 			_isWorking = false;
 			_hotkeyMsgProc = hmp;
@@ -25,11 +25,11 @@ namespace Hotkeys
 		/// Invokes the hotkey. If the hotkey has any chords, user will be asked for clarification.
 		/// </summary>
 		/// <param name="hotkey"></param>
-		public void InvokeHotkey(Hotkey hotkey)
+		public void InvokeHotkey(Hotkey hotkey, string clipboard)
 		{
 			if (_isWorking)
 			{
-				_hotkeys.Enqueue(hotkey);
+				_hotkeys.Enqueue(Tuple.Create(hotkey, clipboard));
 				_proc.Set();
 			}
 		}
@@ -40,9 +40,9 @@ namespace Hotkeys
 			{
 				_proc.Wait();
 				_proc.Reset();
-				if (_hotkeys.TryDequeue(out Hotkey hk))
+				if (_hotkeys.TryDequeue(out Tuple<Hotkey, string> hk))
 				{
-					hk.Proc(this);
+					hk.Item1.Proc(this, hk.Item2);
 				}
 				go = _isWorking;
 			}
