@@ -105,7 +105,7 @@ namespace Hotkeys
 		internal void LoadAndRegister(object sender, EventArgs e)
 		{
 			loader.Load(Handle);
-			_hotkeys = loader.LoadedChords;
+			_hotkeys = loader.LoadedHotkeys;
 			SetContextMenuState(true, false);
 			Register(sender, e);
 		}

@@ -67,7 +67,7 @@ namespace Hotkeys
 	public class HotkeyLoader
 	{
 		private readonly string loadPath;
-		public IDictionary<int, Hotkey> LoadedChords { get; private set; }
+		public IDictionary<int, Hotkey> LoadedHotkeys { get; private set; }
 
 		public HotkeyLoader(string loadPath)
 		{
@@ -75,7 +75,7 @@ namespace Hotkeys
 		}
 		public void Load(IntPtr hWnd)
 		{
-			LoadedChords = new Dictionary<int, Hotkey>();
+			LoadedHotkeys = new Dictionary<int, Hotkey>();
 			XmlSerializer xs = new XmlSerializer(typeof(XmlHotkeys));
 			XmlHotkeys xh;
 			using (System.IO.FileStream fs = new System.IO.FileStream(loadPath, System.IO.FileMode.Open))
@@ -86,14 +86,14 @@ namespace Hotkeys
 			{
 				// If a hotkey's a network path, it might not actually exist just yet, especially if we're loading on system boot
 				// so don't check if the exe path exists....yet.
-				Hotkey chord = LoadChord(rawHk, hWnd);
-				if (chord != null)
+				Hotkey hotkey = LoadHotkey(rawHk, hWnd);
+				if (hotkey != null)
 				{
-					LoadedChords.Add(chord.Id, chord);
+					LoadedHotkeys.Add(hotkey.Id, hotkey);
 				}
 			}
 		}
-		private Hotkey LoadChord(XmlHotkey x, IntPtr hWnd)
+		private Hotkey LoadHotkey(XmlHotkey x, IntPtr hWnd)
 		{
 			uint vk = 0;
 			if (Enum.TryParse(x.XmlKey.Key, out System.Windows.Forms.Keys k))
@@ -107,7 +107,7 @@ namespace Hotkeys
 			Keystroke keystroke = KeystrokeFromString(vk, x.XmlKey.RawMods);
 
 			bool shellExec = false;
-			Hotkey chord = null;
+			Hotkey hotkey = null;
 			switch (x.Type)
 			{
 				case "shell":
@@ -116,7 +116,7 @@ namespace Hotkeys
 				case "process":
 					{
 						// If we have a hotkey, then treat it as a chord anyways, with a single hotkey.
-						chord = new Hotkey(keystroke, hWnd)
+						hotkey = new Hotkey(keystroke, hWnd)
 						{
 							Name = x.Name
 						};
@@ -130,7 +130,7 @@ namespace Hotkeys
 								ps[i] = new Prompt() { Key = xp.Key, Question = xp.Prompt };
 							}
 						}
-						chord.SetSingleChord(new Chord(keystroke)
+						hotkey.SetSingleChord(new Chord(keystroke)
 						{
 							Exec = x.Path,
 							Args = x.Args,
@@ -141,7 +141,7 @@ namespace Hotkeys
 					}
 					break;
 				case "chord":
-					chord = new Hotkey(keystroke, hWnd)
+					hotkey = new Hotkey(keystroke, hWnd)
 					{
 						Name = x.Name
 					};
@@ -180,7 +180,7 @@ namespace Hotkeys
 							}
 						}
 						Keystroke keystrokec = KeystrokeFromString(vk, xc.XmlKey.RawMods);
-						chord.AddChord(new Chord(keystrokec)
+						hotkey.AddChord(new Chord(keystrokec)
 						{
 							Exec = xc.Path,
 							Args = xc.Args,
@@ -192,7 +192,7 @@ namespace Hotkeys
 					break;
 			}
 
-			return chord;
+			return hotkey;
 		}
 		private Keystroke KeystrokeFromString(uint vk, string s)
 		{
