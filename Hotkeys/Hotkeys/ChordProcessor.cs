@@ -1,13 +1,31 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Hotkeys
 {
 	public partial class ChordProcessor : Form
 	{
+		private const int horizontalMargin = 18;
+		private const int verticalMargin = 24;
 		private Hotkey _hotkey;
-		public Hotkey ForHotkey { get => _hotkey; set { _hotkey = value; label1.Text = $"{_hotkey?.Name ?? ""}..."; } }
-		public Chord Chord { get; private set; }
-
+		public Hotkey ForHotkey
+		{
+			get => _hotkey;
+			set
+			{
+				_hotkey = value;
+				uxChords.Text = $"{_hotkey?.Name ?? ""}...{Environment.NewLine}{string.Join(Environment.NewLine, _hotkey.Chords.Values)}";
+				//using (Graphics g = uxChords.CreateGraphics())
+				//{
+				//	SizeF size = g.MeasureString(uxChords.Text, Font);
+				//	uxChords.Height = (int)Math.Ceiling(size.Height);
+				//	uxChords.Width = (int)Math.Ceiling(size.Width);
+				//	Height = verticalMargin + uxChords.Height;
+				//	Width = horizontalMargin + uxChords.Width;
+				//}
+			}
+		}
 		public event ChordHitHandler ChordHit;
 		public delegate void ChordHitHandler(Chord ch);
 
@@ -25,7 +43,6 @@ namespace Hotkeys
 				Keystroke hkm = new Keystroke(keyData);
 				if (_hotkey.Chords.TryGetValue(hkm, out Chord ch))
 				{
-					Chord = ch;
 					ChordHit?.Invoke(ch);
 					return true;
 				}

@@ -12,14 +12,7 @@ namespace Hotkeys
             AcceptButton = uxOk;
             CancelButton = uxCancel;
         }
-        public void SetQuestion(string question)
-        {
-            uxMessage.Text = question;
-            uxInput.Text = "";
-        }
-        public string GetAnswer()
-        {
-            return uxInput.Text;
-        }
+		public string Question { get => uxMessage.Text; set { uxMessage.Text = value; uxInput.Text = ""; } }
+		public string Answer { get => uxInput.Text; private set => uxInput.Text = value; }
     }
 }

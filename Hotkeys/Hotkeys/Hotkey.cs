@@ -104,7 +104,12 @@ namespace Hotkeys
 			else
 			{
 				Chord ch = hotkeyExecutor.GetChord(this);
-				return ProcChord(ch, clipboard);
+				// If the chord is null, that means the user doesn't want to invoke anything after all
+				if (ch != null)
+				{
+					return ProcChord(ch, clipboard);
+				}
+				return Error.Proc.Ok;
 			}
 		}
 		/// <summary>
@@ -121,12 +126,12 @@ namespace Hotkeys
 				for (int i = 0; i < ch.Prompts.Length; i++)
 				{
 					vp.Text = $"{ch.Name}: Enter Value for {ch.Prompts[i].Key}";
-					vp.SetQuestion(ch.Prompts[i].Question);
+					vp.Question = ch.Prompts[i].Question;
 					// The prompt must be the top-level window. It's fine; they pressed a hotkey which they specifically want a prompt for, so doing this isn't evil :)
 					vp.TopMost = true;
 					DialogResult result = vp.ShowDialog();
-					string resp = (result == DialogResult.OK) ? vp.GetAnswer() : "";
-					prs[i] = new PromptResponse() { Key = ch.Prompts[i].Key, Response = vp.GetAnswer() };
+					string resp = (result == DialogResult.OK) ? vp.Answer : "";
+					prs[i] = new PromptResponse() { Key = ch.Prompts[i].Key, Response = resp };
 				}
 			}
 			return ch.Proc(clipboard, prs);

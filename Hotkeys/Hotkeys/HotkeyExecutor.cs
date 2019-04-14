@@ -38,12 +38,12 @@ namespace Hotkeys
 			bool go = true;
 			while (go)
 			{
-				_proc.Wait();
 				_proc.Reset();
 				if (_hotkeys.TryDequeue(out Tuple<Hotkey, string> hk))
 				{
 					hk.Item1.Proc(this, hk.Item2);
 				}
+				_proc.Wait();
 				go = _isWorking;
 			}
 		}
@@ -85,9 +85,13 @@ namespace Hotkeys
 		}
 		public Chord GetChord(Hotkey hk)
 		{
-			WaitToken<Chord> x = _hotkeyMsgProc.AskForChord(hk);
-			x.Wait();
-			return x.Result;
+			if (_hotkeyMsgProc.CanAskForChord)
+			{
+				WaitToken<Chord> x = _hotkeyMsgProc.AskForChord(hk);
+				x.Wait();
+				return x.Result;
+			}
+			return null;
 		}
 		#endregion
 	}

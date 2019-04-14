@@ -24,6 +24,8 @@ namespace Hotkeys
 		private ChordProcessor cp;
 		private readonly object chordLock = new object();
 
+		public bool CanAskForChord { get; private set; }
+
 		public HotkeyMessageProcessor(string hotkeyLoadFile, bool autoLoad)
 		{
 			InitializeComponent();
@@ -52,32 +54,41 @@ namespace Hotkeys
 
 			_hotkeys = null;
 			loader = new HotkeyLoader(loadPath);
+			CanAskForChord = true;
 			if (autoLoad)
 			{
 				LoadAndRegister(this, null);
 			}
 		}
+		/// <summary>
+		/// Don't dispose the WaitToken returned. It's mine!
+		/// </summary>
+		/// <param name="hotkey"></param>
 		public WaitToken<Chord> AskForChord(Hotkey hotkey)
 		{
-			lock (chordLock)
-			{
-				chordSecondKey?.Wait();
-				chordSecondKey?.Dispose();
-				chordSecondKey = new WaitToken<Chord>(false);
-				Invoke(new Action(() => AskForChordInternal(hotkey)));
-				return chordSecondKey;
-			}
+			chordSecondKey?.Wait();
+			CanAskForChord = false;
+			chordSecondKey?.Dispose();
+			chordSecondKey = new WaitToken<Chord>(false);
+			Invoke(new Action(() => AskForChordInternal(hotkey)));
+			return chordSecondKey;
 		}
 		private void AskForChordInternal(Hotkey hk)
 		{
 			cp.ForHotkey = hk;
 			cp.Show();
+			cp.Focus();
 		}
 		private void ChordInvoked(Chord ch)
 		{
+			CanAskForChord = true;
 			cp.Hide();
 			chordSecondKey.Result = ch;
 			chordSecondKey.Set();
+		}
+		public WaitToken<string> AskForPrompt()
+		{
+
 		}
 		private void SetContextMenuState(bool areHotkeysLoaded, bool areHotkeysRegistered)
 		{
@@ -226,7 +237,11 @@ namespace Hotkeys
 					chordSecondKey?.Dispose();
 				}
 
-				UnloadAndUnregister(this, null);
+				// Invoking Unregister will change our context menu state so just do it here
+				foreach (Hotkey chord in _hotkeys.Values)
+				{
+					chord.Unregister();
+				}
 				disposedValue = true;
 			}
 		}
