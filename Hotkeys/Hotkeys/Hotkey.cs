@@ -20,6 +20,10 @@ namespace Hotkeys
 		public bool IsRegistered { get; private set; }
 		public IReadOnlyDictionary<Keystroke, Chord> Chords => _chords;
 		public Chord SingleChord { get; }
+		/// <summary>
+		/// Whether or not the hotkey requires an extra keypress to resolve the Chord, or if it requires prompts from the user
+		/// </summary>
+		public bool RequiresResolution { get { return _chords != null || _singleChord?.Prompts?.Length > 0; } }
 
 		/// <summary>
 		/// Constructs a new instance of Hotkey
@@ -95,7 +99,7 @@ namespace Hotkeys
 		/// Otherwise, the HotkeyExecutor will be queried for an additional keystroke to match one of this Hotkey's chords.
 		/// </summary>
 		/// <param name="hotkeyExecutor">The HotkeyExecutor used to query for a chord. Not required if this Hotkey only has one chord.</param>
-		public Error.Proc Proc(HotkeyExecutor hotkeyExecutor, string clipboard)
+		public Result<System.Diagnostics.Process, Error.Proc> GetProc(HotkeyExecutor hotkeyExecutor, string clipboard)
 		{
 			if (_singleChord != null)
 			{
@@ -109,14 +113,14 @@ namespace Hotkeys
 				{
 					return ProcChord(ch, clipboard);
 				}
-				return Error.Proc.Ok;
+				return new Result<System.Diagnostics.Process, Error.Proc>(null, Error.Proc.Ok);
 			}
 		}
 		/// <summary>
 		/// Invokes the specified chord.
 		/// </summary>
 		/// <param name="ch">The chord to invoke</param>
-		private static Error.Proc ProcChord(Chord ch, string clipboard)
+		private static Result<System.Diagnostics.Process, Error.Proc> ProcChord(Chord ch, string clipboard)
 		{
 			PromptResponse[] prs = null;
 			if (ch.NeedsPrompt)

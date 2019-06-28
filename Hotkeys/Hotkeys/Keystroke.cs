@@ -136,13 +136,13 @@ namespace Hotkeys
 				return false;
 			}
 
-			var keystroke = (Keystroke)obj;
+			Keystroke keystroke = (Keystroke)obj;
 			return _modifiers == keystroke._modifiers &&
 				   Vk == keystroke.Vk;
 		}
 		public override int GetHashCode()
 		{
-			var hashCode = -1313466586;
+			int hashCode = -1313466586;
 			hashCode = hashCode * -1521134295 + _modifiers.GetHashCode();
 			hashCode = hashCode * -1521134295 + Vk.GetHashCode();
 			return hashCode;

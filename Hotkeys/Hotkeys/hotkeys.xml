@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<Hotkeys>
+		<Hotkey type="process" name="Snipping Tool">
+			<Key mod="AltShiftWin">PrintScreen</Key>
+			<Path>C:\WINDOWS\system32\SnippingTool.exe</Path>
+			<Args></Args>
+		</Hotkey>
+		<Hotkey type="process" name="Calculator">
+			<Key mod="AltWin">C</Key>
+			<Path>C:\WINDOWS\system32\calc.exe</Path>
+			<Args></Args>
+		</Hotkey>
+		<Hotkey type="process" name="Explorer Prompt">
+			<Key mod="AltShiftWin">O</Key>
+			<Path>C:\WINDOWS\explorer.exe</Path>
+			<Args>"{folder}"</Args>
+			<Prompts>
+				<P key="{folder}">What folder should I open?</P>
+			</Prompts>
+		</Hotkey>
+		<Hotkey type="process" name="Make ShellExec">
+			<Key mod="AltWin">L</Key>
+			<Path>C:\global\port\FileTemplater\FileTemplater.exe</Path>
+			<Args>-f -t C:\global\port\FileTemplater\template.sx -d C:\Users\mcb\main\link\new -e utf8 -k {url} -v "{clipboard}" -n "{fileName}.sx"</Args>
+			<Prompts>
+				<P key="{fileName}">Filename of the new ShellExec?</P>
+			</Prompts>
+		</Hotkey>
+		<Hotkey type="chord" name="Explorer">
+			<Key mod="AltWin">E</Key>
+			<Chords>
+				<Chord type="process" name="Clipboard">
+					<Key mod="Alt">C</Key>
+					<Path>C:\WINDOWS\explorer.exe</Path>
+					<Args>{clipboard}</Args>
+				</Chord>
+				<Chord type="process" name="Global">
+					<Key mod="Alt">G</Key>
+					<Path>C:\WINDOWS\explorer.exe</Path>
+					<Args>C:\global</Args>
+				</Chord>
+				<Chord type="process" name="Main">
+					<Key mod="Alt">M</Key>
+					<Path>C:\WINDOWS\explorer.exe</Path>
+					<Args>C:\Users\mcb\main</Args>
+				</Chord>
+				<Chord type="process" name="Links">
+					<Key mod="Alt">L</Key>
+					<Path>C:\WINDOWS\explorer.exe</Path>
+					<Args>C:\Users\mcb\main\link</Args>
+				</Chord>
+				<Chord type="process" name="User">
+					<Key mod="Alt">U</Key>
+					<Path>C:\WINDOWS\explorer.exe</Path>
+					<Args>C:\Users\mcb</Args>
+				</Chord>
+			</Chords>
+		</Hotkey>
+	</Hotkeys>
+</root>

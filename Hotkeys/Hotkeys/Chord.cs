@@ -1,7 +1,5 @@
-﻿using System;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Diagnostics;
-using System.Windows.Forms;
 
 namespace Hotkeys
 {
@@ -43,11 +41,11 @@ namespace Hotkeys
 		/// Invokes the chord
 		/// </summary>
 		/// <param name="promptKeyValues">Any responses to prompts required by this chord</param>
-		public virtual Error.Proc Proc(string clipboard, params PromptResponse[] promptKeyValues)
+		public virtual Result<Process, Error.Proc> Proc(string clipboard, params PromptResponse[] promptKeyValues)
 		{
 			if (!System.IO.File.Exists(Exec))
 			{
-				return Error.Proc.FileNotFound;
+				return new Result<Process, Error.Proc>(null, Error.Proc.FileNotFound);
 			}
 			StringBuilder args;
 			if (_hasClipboard)
@@ -76,8 +74,9 @@ namespace Hotkeys
 				info = new ProcessStartInfo(Exec);
 			}
 			info.UseShellExecute = Shell;
-			Process.Start(info).Dispose();
-			return Error.Proc.Ok;
+			Process p = new Process();
+			p.StartInfo = info;
+			return new Result<Process, Error.Proc>(p, Error.Proc.Ok);
 		}
 		public override string ToString()
 		{

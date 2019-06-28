@@ -115,6 +115,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Result.cs" />
     <Compile Include="ValuePrompt.cs">
       <SubType>Form</SubType>
     </Compile>

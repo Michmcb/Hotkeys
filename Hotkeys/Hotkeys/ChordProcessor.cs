@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Windows.Forms;
 
 namespace Hotkeys
@@ -39,6 +38,7 @@ namespace Hotkeys
 			// Once we know that, we can return the hotkey that was hit.
 			if (keyData != Keys.Escape)
 			{
+				this.DialogResult = DialogResult.OK;
 				Keys withoutMods = keyData & ~Keys.Modifiers;
 				Keystroke hkm = new Keystroke(keyData);
 				if (_hotkey.Chords.TryGetValue(hkm, out Chord ch))
@@ -54,8 +54,24 @@ namespace Hotkeys
 			else
 			{
 				ChordHit?.Invoke(null);
+				this.DialogResult = DialogResult.Cancel;
 				return true;
 			}
+		}
+		private void GrabFocus(object sender, EventArgs e)
+		{
+			// Try and grab focus back; that way, every keystroke the user does
+			// to try and invoke a chord will get picked up by this. Otherwise, they'd have to click
+			// this to bring focus back, and then press their chord.
+			this.Activate();
+		}
+		private void AskForFocus(object sender, EventArgs e)
+		{
+			this.Text = "Press a Chord (Focus lost, please click me)";
+		}
+		private void ResetTitle(object sender, EventArgs e)
+		{
+			this.Text = "Press a Chord";
 		}
 	}
 }

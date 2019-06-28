@@ -4,25 +4,22 @@ using System.Windows.Forms;
 
 namespace Hotkeys
 {
-	public class HotkeyMessageProcessor : Form, IDisposable
+	public class HotkeyMessageProcessor : Form
 	{
 		private const int WM_HOTKEY_MSG = 0x0312;
-		private NotifyIcon notifyIcon;
-		private MenuItem mLoad;
-		private MenuItem mUnload;
-		private MenuItem mReload;
-		private MenuItem mRegister;
-		private MenuItem mUnregister;
-		private MenuItem mStatus;
-		private MenuItem mExit;
+		private readonly NotifyIcon notifyIcon;
+		private readonly MenuItem mLoad;
+		private readonly MenuItem mUnload;
+		private readonly MenuItem mReload;
+		private readonly MenuItem mRegister;
+		private readonly MenuItem mUnregister;
+		private readonly MenuItem mStatus;
+		private readonly MenuItem mExit;
 
 		private IDictionary<int, Hotkey> _hotkeys;
 		private readonly string loadPath;
 		private readonly HotkeyExecutor exec;
-		private HotkeyLoader loader;
-		private WaitToken<Chord> chordSecondKey;
-		private ChordProcessor cp;
-		private readonly object chordLock = new object();
+		private readonly HotkeyLoader loader;
 
 		public bool CanAskForChord { get; private set; }
 
@@ -30,7 +27,7 @@ namespace Hotkeys
 		{
 			InitializeComponent();
 			loadPath = hotkeyLoadFile;
-			chordSecondKey = null;
+			//chordSecondKey = null;
 			notifyIcon = new NotifyIcon();
 			mLoad = new MenuItem("Load and Register", new EventHandler(LoadAndRegister));
 			mReload = new MenuItem("Reload and Register", new EventHandler(ReloadAndRegister));
@@ -42,8 +39,6 @@ namespace Hotkeys
 
 			exec = new HotkeyExecutor(this);
 			exec.Start();
-			cp = new ChordProcessor();
-			cp.ChordHit += ChordInvoked;
 
 			SetContextMenuState(false, false);
 
@@ -60,42 +55,54 @@ namespace Hotkeys
 				LoadAndRegister(this, null);
 			}
 		}
+		public ChordProcessor GetNewChordProcessor()
+		{
+			ChordProcessor x = null;
+			Invoke(new Action(() =>
+			{
+				x = new ChordProcessor();
+			}));
+			return x;
+		}
+		public void DisposeChordProcessor(ChordProcessor cp)
+		{
+			Invoke(new Action(() =>
+			{
+				cp.Dispose();
+			}));
+		}
 		/// <summary>
 		/// Don't dispose the WaitToken returned. It's mine!
 		/// </summary>
 		/// <param name="hotkey"></param>
-		public WaitToken<Chord> AskForChord(Hotkey hotkey)
-		{
-			chordSecondKey?.Wait();
-			CanAskForChord = false;
-			chordSecondKey?.Dispose();
-			chordSecondKey = new WaitToken<Chord>(false);
-			Invoke(new Action(() => AskForChordInternal(hotkey)));
-			return chordSecondKey;
-		}
-		private void AskForChordInternal(Hotkey hk)
-		{
-			cp.ForHotkey = hk;
-			cp.Show();
-			cp.Focus();
-		}
-		private void ChordInvoked(Chord ch)
-		{
-			CanAskForChord = true;
-			cp.Hide();
-			chordSecondKey.Result = ch;
-			chordSecondKey.Set();
-		}
-		public WaitToken<string> AskForPrompt()
-		{
-
-		}
+		//public WaitToken<Chord> AskForChord(Hotkey hotkey)
+		//{
+		//	chordSecondKey?.Wait();
+		//	CanAskForChord = false;
+		//	chordSecondKey?.Dispose();
+		//	chordSecondKey = new WaitToken<Chord>(false);
+		//	Invoke(new Action(() => AskForChordInternal(hotkey)));
+		//	return chordSecondKey;
+		//}
+		//private void AskForChordInternal(Hotkey hk)
+		//{
+		//	cp.ForHotkey = hk;
+		//	cp.Show();
+		//	cp.Focus();
+		//}
+		//private void ChordInvoked(Chord ch)
+		//{
+		//	CanAskForChord = true;
+		//	cp.Hide();
+		//	chordSecondKey.Result = ch;
+		//	chordSecondKey.Set();
+		//}
 		private void SetContextMenuState(bool areHotkeysLoaded, bool areHotkeysRegistered)
 		{
 			if (areHotkeysLoaded)
 			{
 				mLoad.Enabled = false;
-				mUnload.Enabled = true;
+				mReload.Enabled = mUnload.Enabled = true;
 				if (areHotkeysRegistered)
 				{
 					mRegister.Enabled = false;
@@ -110,7 +117,7 @@ namespace Hotkeys
 			else
 			{
 				mLoad.Enabled = true;
-				mUnload.Enabled = mRegister.Enabled = mUnregister.Enabled = mUnload.Enabled = false;
+				mReload.Enabled = mUnload.Enabled = mRegister.Enabled = mUnregister.Enabled = mUnload.Enabled = false;
 			}
 		}
 		internal void LoadAndRegister(object sender, EventArgs e)
@@ -190,19 +197,19 @@ namespace Hotkeys
 		}
 		private void InitializeComponent()
 		{
-			this.SuspendLayout();
-			this.AutoScaleMode = AutoScaleMode.None;
-			this.CausesValidation = false;
-			this.ClientSize = new System.Drawing.Size(0, 0);
-			this.ControlBox = false;
-			this.Enabled = false;
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-			this.Name = "";
-			this.ShowIcon = false;
-			this.ShowInTaskbar = false;
-			this.SizeGripStyle = SizeGripStyle.Hide;
-			this.ResumeLayout(false);
+			SuspendLayout();
+			AutoScaleMode = AutoScaleMode.None;
+			CausesValidation = false;
+			ClientSize = new System.Drawing.Size(0, 0);
+			ControlBox = false;
+			Enabled = false;
+			MaximizeBox = false;
+			MinimizeBox = false;
+			Name = "";
+			ShowIcon = false;
+			ShowInTaskbar = false;
+			SizeGripStyle = SizeGripStyle.Hide;
+			ResumeLayout(false);
 		}
 		internal void Exit(object sender, EventArgs e)
 		{
@@ -234,7 +241,7 @@ namespace Hotkeys
 					mStatus.Dispose();
 					mExit.Dispose();
 					exec.Dispose();
-					chordSecondKey?.Dispose();
+					notifyIcon.Visible = false;
 				}
 
 				// Invoking Unregister will change our context menu state so just do it here
@@ -244,15 +251,6 @@ namespace Hotkeys
 				}
 				disposedValue = true;
 			}
-		}
-		~HotkeyMessageProcessor()
-		{
-			Dispose(false);
-		}
-		void System.IDisposable.Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
 		}
 		#endregion
 	}

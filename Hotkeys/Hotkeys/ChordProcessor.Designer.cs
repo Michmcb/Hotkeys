@@ -38,7 +38,7 @@
 			this.uxChords.Location = new System.Drawing.Point(0, 0);
 			this.uxChords.Name = "uxChords";
 			this.uxChords.Size = new System.Drawing.Size(28, 13);
-			this.uxChords.TabIndex = 0;
+			this.uxChords.TabIndex = 1;
 			this.uxChords.Text = "Test";
 			// 
 			// ChordProcessor
@@ -47,10 +47,11 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
 			this.BackColor = System.Drawing.Color.White;
-			this.ClientSize = new System.Drawing.Size(240, 120);
+			this.ClientSize = new System.Drawing.Size(236, 116);
 			this.ControlBox = false;
 			this.Controls.Add(this.uxChords);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.KeyPreview = true;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "ChordProcessor";
@@ -58,8 +59,12 @@
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "ChordProcessor";
+			this.Text = "Press a Chord";
 			this.TopMost = true;
+			this.Activated += new System.EventHandler(this.ResetTitle);
+			this.Deactivate += new System.EventHandler(this.AskForFocus);
+			this.Shown += new System.EventHandler(this.GrabFocus);
+			this.Leave += new System.EventHandler(this.AskForFocus);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
