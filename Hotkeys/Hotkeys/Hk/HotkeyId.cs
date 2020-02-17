@@ -1,4 +1,4 @@
-﻿namespace Hotkeys
+﻿namespace Hotkeys.Hk
 {
 	public static class HotkeyId
 	{

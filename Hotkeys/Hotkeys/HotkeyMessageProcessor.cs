@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Hotkeys.Hk;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Hotkeys
@@ -8,95 +12,57 @@ namespace Hotkeys
 	{
 		private const int WM_HOTKEY_MSG = 0x0312;
 		private readonly NotifyIcon notifyIcon;
-		private readonly MenuItem mLoad;
-		private readonly MenuItem mUnload;
-		private readonly MenuItem mReload;
-		private readonly MenuItem mRegister;
-		private readonly MenuItem mUnregister;
-		private readonly MenuItem mStatus;
-		private readonly MenuItem mExit;
-
-		private IDictionary<int, Hotkey> _hotkeys;
-		private readonly string loadPath;
-		private readonly HotkeyExecutor exec;
-		private readonly HotkeyLoader loader;
-
-		public bool CanAskForChord { get; private set; }
-
+		private readonly ToolStripMenuItem mLoad;
+		private readonly ToolStripMenuItem mUnload;
+		private readonly ToolStripMenuItem mReload;
+		private readonly ToolStripMenuItem mRegister;
+		private readonly ToolStripMenuItem mUnregister;
+		private readonly ToolStripMenuItem mStatus;
+		private readonly ToolStripMenuItem mExit;
+		private readonly ChordProcessor chordProcessor;
+		private readonly string hotkeyLoadFile;
+		private bool chordFree;
+		private IDictionary<int, Hotkey> loadedHotkeys;
+		public bool CurrentlyRegistered { get;private set; }
 		public HotkeyMessageProcessor(string hotkeyLoadFile, bool autoLoad)
 		{
 			InitializeComponent();
-			loadPath = hotkeyLoadFile;
-			//chordSecondKey = null;
+			chordFree = true;
+			CurrentlyRegistered = false;
 			notifyIcon = new NotifyIcon();
-			mLoad = new MenuItem("Load and Register", new EventHandler(LoadAndRegister));
-			mReload = new MenuItem("Reload and Register", new EventHandler(ReloadAndRegister));
-			mUnload = new MenuItem("Unload and Unregister", new EventHandler(UnloadAndUnregister));
-			mRegister = new MenuItem("Register", new EventHandler(Register));
-			mUnregister = new MenuItem("Unregister", new EventHandler(Unregister));
-			mStatus = new MenuItem("Status", new EventHandler(ShowStatus));
-			mExit = new MenuItem("Exit", new EventHandler(Exit));
+			chordProcessor = new ChordProcessor();
+			chordProcessor.ChordHit += ChordHit;
 
-			exec = new HotkeyExecutor(this);
-			exec.Start();
+			mLoad = new ToolStripMenuItem("Load and Register");
+			mLoad.Click += new EventHandler(LoadAndRegister);
+			mReload = new ToolStripMenuItem("Reload and Register");
+			mReload.Click += new EventHandler(ReloadAndRegister);
+			mUnload = new ToolStripMenuItem("Unload and Unregister");
+			mUnload.Click += new EventHandler(UnloadAndUnregister);
+			mRegister = new ToolStripMenuItem("Register");
+			mRegister.Click += new EventHandler(Register);
+			mUnregister = new ToolStripMenuItem("Unregister");
+			mUnregister.Click += new EventHandler(Unregister);
+			mStatus = new ToolStripMenuItem("Status");
+			mStatus.Click += new EventHandler(ShowStatus);
+			mExit = new ToolStripMenuItem("Exit");
+			mExit.Click += new EventHandler(Exit);
 
 			SetContextMenuState(false, false);
 
 			notifyIcon.Icon = Properties.Resources.Icon;
-			notifyIcon.ContextMenu = new ContextMenu(new MenuItem[] { mLoad, mReload, mUnload, mRegister, mUnregister, mStatus, mExit });
+			notifyIcon.ContextMenuStrip = new ContextMenuStrip();
+			notifyIcon.ContextMenuStrip.Items.AddRange(new ToolStripMenuItem[] { mLoad, mReload, mUnload, mRegister, mUnregister, mStatus, mExit });
 			notifyIcon.Visible = true;
 			notifyIcon.Text = "Hotkeys";
 
-			_hotkeys = null;
-			loader = new HotkeyLoader(loadPath);
-			CanAskForChord = true;
+			loadedHotkeys = new Dictionary<int, Hotkey>();
+			this.hotkeyLoadFile = hotkeyLoadFile;
 			if (autoLoad)
 			{
-				LoadAndRegister(this, null);
+				LoadAndRegister(this, EventArgs.Empty);
 			}
 		}
-		public ChordProcessor GetNewChordProcessor()
-		{
-			ChordProcessor x = null;
-			Invoke(new Action(() =>
-			{
-				x = new ChordProcessor();
-			}));
-			return x;
-		}
-		public void DisposeChordProcessor(ChordProcessor cp)
-		{
-			Invoke(new Action(() =>
-			{
-				cp.Dispose();
-			}));
-		}
-		/// <summary>
-		/// Don't dispose the WaitToken returned. It's mine!
-		/// </summary>
-		/// <param name="hotkey"></param>
-		//public WaitToken<Chord> AskForChord(Hotkey hotkey)
-		//{
-		//	chordSecondKey?.Wait();
-		//	CanAskForChord = false;
-		//	chordSecondKey?.Dispose();
-		//	chordSecondKey = new WaitToken<Chord>(false);
-		//	Invoke(new Action(() => AskForChordInternal(hotkey)));
-		//	return chordSecondKey;
-		//}
-		//private void AskForChordInternal(Hotkey hk)
-		//{
-		//	cp.ForHotkey = hk;
-		//	cp.Show();
-		//	cp.Focus();
-		//}
-		//private void ChordInvoked(Chord ch)
-		//{
-		//	CanAskForChord = true;
-		//	cp.Hide();
-		//	chordSecondKey.Result = ch;
-		//	chordSecondKey.Set();
-		//}
 		private void SetContextMenuState(bool areHotkeysLoaded, bool areHotkeysRegistered)
 		{
 			if (areHotkeysLoaded)
@@ -120,52 +86,51 @@ namespace Hotkeys
 				mReload.Enabled = mUnload.Enabled = mRegister.Enabled = mUnregister.Enabled = mUnload.Enabled = false;
 			}
 		}
-		internal void LoadAndRegister(object sender, EventArgs e)
+		internal void LoadAndRegister(object? sender, EventArgs e)
 		{
-			loader.Load(Handle);
-			_hotkeys = loader.LoadedHotkeys;
+			loadedHotkeys = HotkeyLoader.Load(hotkeyLoadFile, Handle);
 			SetContextMenuState(true, false);
 			Register(sender, e);
 		}
-		internal void ReloadAndRegister(object sender, EventArgs e)
+		internal void ReloadAndRegister(object? sender, EventArgs e)
 		{
 			UnloadAndUnregister(this, e);
 			LoadAndRegister(this, e);
 		}
-		internal void UnloadAndUnregister(object sender, EventArgs e)
+		internal void UnloadAndUnregister(object? sender, EventArgs e)
 		{
 			Unregister(sender, e);
-			_hotkeys.Clear();
-			_hotkeys = null;
+			loadedHotkeys.Clear();
 			SetContextMenuState(false, false);
 		}
-		internal void Register(object sender, EventArgs e)
+		internal void Register(object? sender, EventArgs e)
 		{
 			bool allGood = true;
-			foreach (Hotkey chord in _hotkeys.Values)
+			foreach (Hotkey chord in loadedHotkeys.Values)
 			{
 				allGood &= chord.Register();
 			}
+			CurrentlyRegistered = true;
 			if (!allGood)
 			{
 				notifyIcon.ShowBalloonTip(10000, "Status", "Not all hotkeys registered successfully; please check status!", ToolTipIcon.Error);
 			}
 			SetContextMenuState(true, true);
 		}
-		internal void Unregister(object sender, EventArgs e)
+		internal void Unregister(object? sender, EventArgs e)
 		{
-			foreach (Hotkey chord in _hotkeys.Values)
+			foreach (Hotkey chord in loadedHotkeys.Values)
 			{
 				chord.Unregister();
 			}
 			SetContextMenuState(true, false);
 		}
-		internal void ShowStatus(object sender, EventArgs e)
+		internal void ShowStatus(object? sender, EventArgs e)
 		{
-			if (_hotkeys != null)
+			if (loadedHotkeys != null)
 			{
-				System.Text.StringBuilder sb = new System.Text.StringBuilder();
-				foreach (Hotkey chord in _hotkeys.Values)
+				StringBuilder sb = new StringBuilder();
+				foreach (Hotkey chord in loadedHotkeys.Values)
 				{
 					sb.AppendLine(chord.ToString() + ". Currently " + (chord.IsRegistered ? "Active" : "Inactive"));
 				}
@@ -180,14 +145,52 @@ namespace Hotkeys
 		{
 			if (m.Msg == WM_HOTKEY_MSG)
 			{
-				if (_hotkeys.TryGetValue(m.WParam.ToInt32(), out Hotkey hotkey))
+				if (loadedHotkeys.TryGetValue(m.WParam.ToInt32(), out Hotkey? hotkey))
 				{
-					exec.InvokeHotkey(hotkey, Clipboard.GetText() ?? "");
+					if (hotkey.HasChords)
+					{
+						lock (chordProcessor)
+						{
+							if (chordFree)
+							{
+								chordFree = false;
+								chordProcessor.ForHotkey = hotkey;
+								chordProcessor.Show();
+								chordProcessor.Activate();
+							}
+						}
+					}
+					else
+					{
+						Result<Process?, ProcErrorCode> result = hotkey.GetSingleProc(Clipboard.GetText() ?? "");
+						if (result.Ok != null)
+						{
+							using Process p = result.Ok;
+							p.Start();
+						}
+					}
 				}
 			}
 			else
 			{
 				base.WndProc(ref m);
+			}
+		}
+		private void ChordHit(Chord? ch)
+		{
+			chordProcessor.Hide();
+			lock (chordProcessor)
+			{
+				chordFree = true;
+			}
+			if (ch != null)
+			{
+				Result<Process?, ProcErrorCode> result = ch.GetProcess(Clipboard.GetText() ?? "");
+				if (result.Ok != null)
+				{
+					using Process p = result.Ok;
+					p.Start();
+				}
 			}
 		}
 		protected override void SetVisibleCore(bool value)
@@ -200,7 +203,7 @@ namespace Hotkeys
 			SuspendLayout();
 			AutoScaleMode = AutoScaleMode.None;
 			CausesValidation = false;
-			ClientSize = new System.Drawing.Size(0, 0);
+			ClientSize = new Size(0, 0);
 			ControlBox = false;
 			Enabled = false;
 			MaximizeBox = false;
@@ -211,12 +214,12 @@ namespace Hotkeys
 			SizeGripStyle = SizeGripStyle.Hide;
 			ResumeLayout(false);
 		}
-		internal void Exit(object sender, EventArgs e)
+		internal void Exit(object? sender, EventArgs e)
 		{
 			// We must manually tidy up and remove the icon before we exit.
 			// Otherwise it will be left behind until the user mouses over.
 			// And more importantly, unregister all of our hotkeys
-			foreach (Hotkey hk in _hotkeys.Values)
+			foreach (Hotkey hk in loadedHotkeys.Values)
 			{
 				hk.Unregister();
 			}
@@ -240,12 +243,12 @@ namespace Hotkeys
 					mUnregister.Dispose();
 					mStatus.Dispose();
 					mExit.Dispose();
-					exec.Dispose();
 					notifyIcon.Visible = false;
+					chordProcessor.Dispose();
 				}
 
 				// Invoking Unregister will change our context menu state so just do it here
-				foreach (Hotkey chord in _hotkeys.Values)
+				foreach (Hotkey chord in loadedHotkeys.Values)
 				{
 					chord.Unregister();
 				}

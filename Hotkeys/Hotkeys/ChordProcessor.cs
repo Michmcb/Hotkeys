@@ -1,36 +1,27 @@
 ﻿using System;
 using System.Windows.Forms;
+using Hotkeys.Hk;
 
 namespace Hotkeys
 {
 	public partial class ChordProcessor : Form
 	{
-		private const int horizontalMargin = 18;
-		private const int verticalMargin = 24;
-		private Hotkey _hotkey;
-		public Hotkey ForHotkey
-		{
-			get => _hotkey;
-			set
-			{
-				_hotkey = value;
-				uxChords.Text = $"{_hotkey?.Name ?? ""}...{Environment.NewLine}{string.Join(Environment.NewLine, _hotkey.Chords.Values)}";
-				//using (Graphics g = uxChords.CreateGraphics())
-				//{
-				//	SizeF size = g.MeasureString(uxChords.Text, Font);
-				//	uxChords.Height = (int)Math.Ceiling(size.Height);
-				//	uxChords.Width = (int)Math.Ceiling(size.Width);
-				//	Height = verticalMargin + uxChords.Height;
-				//	Width = horizontalMargin + uxChords.Width;
-				//}
-			}
-		}
+		private Hotkey? _hotkey;
 		public event ChordHitHandler ChordHit;
-		public delegate void ChordHitHandler(Chord ch);
-
+		public delegate void ChordHitHandler(Chord? ch);
 		public ChordProcessor()
 		{
 			InitializeComponent();
+			Activate();
+		}
+		public Hotkey ForHotkey
+		{
+			get => _hotkey ?? throw new InvalidOperationException("");
+			set
+			{
+				_hotkey = value;
+				uxChords.Text = $"{_hotkey?.Name ?? ""}...{Environment.NewLine}{string.Join(Environment.NewLine, value.Chords.Values)}";
+			}
 		}
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
@@ -38,10 +29,10 @@ namespace Hotkeys
 			// Once we know that, we can return the hotkey that was hit.
 			if (keyData != Keys.Escape)
 			{
-				this.DialogResult = DialogResult.OK;
+				DialogResult = DialogResult.OK;
 				Keys withoutMods = keyData & ~Keys.Modifiers;
 				Keystroke hkm = new Keystroke(keyData);
-				if (_hotkey.Chords.TryGetValue(hkm, out Chord ch))
+				if (ForHotkey.Chords.TryGetValue(hkm, out Chord? ch))
 				{
 					ChordHit?.Invoke(ch);
 					return true;
@@ -54,7 +45,7 @@ namespace Hotkeys
 			else
 			{
 				ChordHit?.Invoke(null);
-				this.DialogResult = DialogResult.Cancel;
+				DialogResult = DialogResult.Cancel;
 				return true;
 			}
 		}
@@ -63,15 +54,15 @@ namespace Hotkeys
 			// Try and grab focus back; that way, every keystroke the user does
 			// to try and invoke a chord will get picked up by this. Otherwise, they'd have to click
 			// this to bring focus back, and then press their chord.
-			this.Activate();
+			Activate();
 		}
 		private void AskForFocus(object sender, EventArgs e)
 		{
-			this.Text = "Press a Chord (Focus lost, please click me)";
+			Text = "Press a Chord (Focus lost, please click me)";
 		}
 		private void ResetTitle(object sender, EventArgs e)
 		{
-			this.Text = "Press a Chord";
+			Text = "Press a Chord";
 		}
 	}
 }

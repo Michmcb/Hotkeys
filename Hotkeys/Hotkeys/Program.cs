@@ -1,21 +1,38 @@
-﻿using System.Windows.Forms;
+using System;
+using System.Windows.Forms;
 
 namespace Hotkeys
 {
-	internal class Program
+	internal static class Program
 	{
-		[System.STAThread]
-		private static int Main(string[] args)
+		/// <summary>
+		///  The main entry point for the application.
+		/// </summary>
+		[STAThread]
+		private static void Main(string[] args)
 		{
+			Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
-			using (HotkeyMessageProcessor mp = new HotkeyMessageProcessor((args.Length == 1) ? args[0] : "hotkeys.xml", true))
+			HotkeyMessageProcessor? mp = null;
+			try
 			{
+				mp = new HotkeyMessageProcessor((args.Length == 1) ? args[0] : "hotkeys.xml", true);
 				Application.Run(mp);
 			}
-
-			return 0;
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			finally
+			{
+				if (mp?.CurrentlyRegistered == true)
+				{
+					mp.Unregister(null, EventArgs.Empty);
+				}
+				mp?.Dispose();
+			}
 		}
 	}
 }
