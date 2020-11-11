@@ -7,7 +7,7 @@ namespace Hotkeys
 	public partial class ChordProcessor : Form
 	{
 		private Hotkey? _hotkey;
-		public event ChordHitHandler ChordHit;
+		public event ChordHitHandler? ChordHit;
 		public delegate void ChordHitHandler(Chord? ch);
 		public ChordProcessor()
 		{

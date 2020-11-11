@@ -126,7 +126,7 @@ namespace Hotkeys.Hk
 		}
 		public override string ToString()
 		{
-			return $"{Keystroke.ToString()}: {Name}";
+			return string.Concat(Keystroke.ToString(), ": ", Name);
 		}
 		public override bool Equals(object? obj)
 		{

@@ -6,17 +6,17 @@ namespace Hotkeys.Hk
 	public class InvokeTarget
 	{
 		private readonly bool hasClipboard;
-		public InvokeTarget(string path, string? args, string? dir, bool shell)
+		public InvokeTarget(string path, string args, string dir, bool shell)
 		{
 			Path = path;
 			Args = args;
 			Dir = dir;
 			Shell = shell;
-			hasClipboard = args?.Contains("{clipboard}") ?? false;
+			hasClipboard = args.Contains("{clipboard}");
 		}
 		public string Path { get; }
-		public string? Args { get; }
-		public string? Dir { get; }
+		public string Args { get; }
+		public string Dir { get; }
 		public bool Shell { get; }
 		/// <summary>
 		/// Returns a process that can be started, which is synonymous with invoking the trigger
@@ -31,7 +31,7 @@ namespace Hotkeys.Hk
 			StringBuilder args;
 			if (hasClipboard)
 			{
-				args = new StringBuilder(Args?.Replace("{clipboard}", clipboard));
+				args = new StringBuilder(Args.Replace("{clipboard}", clipboard));
 			}
 			else
 			{
@@ -39,7 +39,7 @@ namespace Hotkeys.Hk
 			}
 			ProcessStartInfo info;
 			string argsToUse = args.ToString();
-			if (!string.IsNullOrEmpty(argsToUse))
+			if (argsToUse.Length != 0)
 			{
 				info = new ProcessStartInfo(Path, argsToUse);
 			}
