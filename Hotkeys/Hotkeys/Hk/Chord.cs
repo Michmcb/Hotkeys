@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-
-namespace Hotkeys.Hk
+﻿namespace Hotkeys.Hk
 {
+	using System;
+	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
+
 	/// <summary>
 	/// Represents a second keystroke that can come after a Hotkey, to invoke something
 	/// </summary>
-	public class Chord : IEquatable<Chord>
+	public sealed class Chord : IEquatable<Chord>
 	{
 		public Keystroke Keystroke { get; }
 		public int Id { get; private set; }
@@ -32,13 +30,13 @@ namespace Hotkeys.Hk
 		/// Invokes the chord
 		/// </summary>
 		/// <param name="promptKeyValues">Any responses to prompts required by this chord</param>
-		public virtual Result<Process?, ProcErrorCode> GetProcess(string clipboard = "")
+		public Result<Process?, ProcErrorCode> GetProcess(string clipboard = "")
 		{
 			return InvokeTarget.GetProcess(clipboard);
 		}
 		public override string ToString()
 		{
-			return $"{Keystroke.ToString()}: {Name}";
+			return string.Concat(Keystroke.ToString(), ": ", Name);
 		}
 		public override bool Equals(object? obj)
 		{
@@ -46,20 +44,13 @@ namespace Hotkeys.Hk
 		}
 		public bool Equals([AllowNull] Chord? other)
 		{
-			return other != null &&
-				   Id == other.Id;
+			return other != null && Id == other.Id;
 		}
 		public override int GetHashCode()
 		{
 			return HashCode.Combine(Id);
 		}
-		public static bool operator ==(Chord? left, Chord? right)
-		{
-			return EqualityComparer<Chord>.Default.Equals(left, right);
-		}
-		public static bool operator !=(Chord? left, Chord? right)
-		{
-			return !(left == right);
-		}
+		public static bool operator ==(Chord? left, Chord? right) => left?.Id == right?.Id;
+		public static bool operator !=(Chord? left, Chord? right) => left?.Id != right?.Id;
 	}
 }

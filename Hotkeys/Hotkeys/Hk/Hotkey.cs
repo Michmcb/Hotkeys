@@ -1,14 +1,14 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
-namespace Hotkeys.Hk
+﻿namespace Hotkeys.Hk
 {
+	using System;
+	using System.Diagnostics;
+	using System.Collections.Generic;
+	using System.Diagnostics.CodeAnalysis;
+
 	/// <summary>
 	/// Represents a keystroke that can be pressed to invoke something.
 	/// </summary>
-	public class Hotkey : IEquatable<Hotkey>
+	public sealed class Hotkey : IEquatable<Hotkey>
 	{
 		private readonly IntPtr hWnd;
 		private readonly Dictionary<Keystroke, Chord> chords;
@@ -134,20 +134,13 @@ namespace Hotkeys.Hk
 		}
 		public bool Equals([AllowNull] Hotkey? other)
 		{
-			return other != null &&
-				   Id == other.Id;
+			return other != null && Id == other.Id;
 		}
 		public override int GetHashCode()
 		{
 			return HashCode.Combine(Id);
 		}
-		public static bool operator ==(Hotkey? left, Hotkey? right)
-		{
-			return EqualityComparer<Hotkey>.Default.Equals(left, right);
-		}
-		public static bool operator !=(Hotkey? left, Hotkey? right)
-		{
-			return !(left == right);
-		}
+		public static bool operator ==(Hotkey? left, Hotkey? right) => left?.Id == right?.Id;
+		public static bool operator !=(Hotkey? left, Hotkey? right) => left?.Id == right?.Id;
 	}
 }

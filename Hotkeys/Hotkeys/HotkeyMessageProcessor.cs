@@ -1,14 +1,14 @@
-﻿using Hotkeys.Hk;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-
-namespace Hotkeys
+﻿namespace Hotkeys
 {
-	public class HotkeyMessageProcessor : Form
+	using Hotkeys.Hk;
+	using System;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using System.Drawing;
+	using System.Text;
+	using System.Windows.Forms;
+
+	public sealed class HotkeyMessageProcessor : Form
 	{
 		private const int WM_HOTKEY_MSG = 0x0312;
 		private readonly NotifyIcon notifyIcon;
@@ -130,9 +130,9 @@ namespace Hotkeys
 			if (loadedHotkeys != null)
 			{
 				StringBuilder sb = new StringBuilder();
-				foreach (Hotkey chord in loadedHotkeys.Values)
+				foreach (Hotkey hk in loadedHotkeys.Values)
 				{
-					sb.AppendLine(chord.ToString() + ". Currently " + (chord.IsRegistered ? "Active" : "Inactive"));
+					sb.AppendLine(hk.ToString() + ". Currently " + (hk.IsRegistered ? "Active" : "Inactive"));
 				}
 				MessageBox.Show(sb.ToString(), "Hotkey Status", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
 			}
@@ -208,7 +208,7 @@ namespace Hotkeys
 			Enabled = false;
 			MaximizeBox = false;
 			MinimizeBox = false;
-			Name = "";
+			Name = string.Empty;
 			ShowIcon = false;
 			ShowInTaskbar = false;
 			SizeGripStyle = SizeGripStyle.Hide;

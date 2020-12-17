@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using System.Text;
-
-namespace Hotkeys.Hk
+﻿namespace Hotkeys.Hk
 {
-	public class InvokeTarget
+	using System.Diagnostics;
+	using System.Text;
+	public sealed class InvokeTarget
 	{
 		private readonly bool hasClipboard;
 		public InvokeTarget(string path, string args, string dir, bool shell)
@@ -22,7 +21,7 @@ namespace Hotkeys.Hk
 		/// Returns a process that can be started, which is synonymous with invoking the trigger
 		/// </summary>
 		/// <param name="promptKeyValues">Any responses to prompts required by this chord</param>
-		public virtual Result<Process?, ProcErrorCode> GetProcess(string clipboard = "")
+		public Result<Process?, ProcErrorCode> GetProcess(string clipboard = "")
 		{
 			if (!System.IO.File.Exists(Path))
 			{
@@ -39,14 +38,7 @@ namespace Hotkeys.Hk
 			}
 			ProcessStartInfo info;
 			string argsToUse = args.ToString();
-			if (argsToUse.Length != 0)
-			{
-				info = new ProcessStartInfo(Path, argsToUse);
-			}
-			else
-			{
-				info = new ProcessStartInfo(Path);
-			}
+			info = argsToUse.Length != 0 ? new ProcessStartInfo(Path, argsToUse) : new ProcessStartInfo(Path);
 			if (!(info.UseShellExecute = Shell) && Dir != null)
 			{
 				info.WorkingDirectory = Dir;

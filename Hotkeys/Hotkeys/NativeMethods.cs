@@ -1,7 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices;
-namespace Hotkeys
+﻿namespace Hotkeys
 {
+	using System;
+	using System.Runtime.InteropServices;
+
 	internal static class NativeMethods
 	{
 		[DllImport("user32.dll")]

@@ -1,9 +1,9 @@
-﻿using System;
-using System.Windows.Forms;
-using Hotkeys.Hk;
-
-namespace Hotkeys
+﻿namespace Hotkeys
 {
+	using System;
+	using System.Windows.Forms;
+	using Hotkeys.Hk;
+
 	public partial class ChordProcessor : Form
 	{
 		private Hotkey? _hotkey;

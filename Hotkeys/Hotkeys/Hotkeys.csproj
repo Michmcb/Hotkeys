@@ -32,4 +32,10 @@
     <PackageReference Include="ConfigTextFile" Version="1.8.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="keycode.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

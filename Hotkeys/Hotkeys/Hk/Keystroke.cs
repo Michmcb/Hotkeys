@@ -1,11 +1,10 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-using System.Windows.Forms;
-
-namespace Hotkeys.Hk
+﻿namespace Hotkeys.Hk
 {
-	public struct Keystroke : IEquatable<Keystroke>
+	using System;
+	using System.Text;
+	using System.Windows.Forms;
+
+	public readonly struct Keystroke : IEquatable<Keystroke>
 	{
 		public const uint MOD_NONE = 0x00;
 		public const uint MOD_ALT = 0x01;
@@ -14,21 +13,11 @@ namespace Hotkeys.Hk
 		public const uint MOD_WIN = 0x08;
 		public const uint MOD_NOREPEAT = 0x4000;
 		public uint Vk { get; }
-		public uint Modifiers { get; private set; }
+		public uint Modifiers { get; }
 		public bool HasAlt => (Modifiers & MOD_ALT) == MOD_ALT;
 		public bool HasCtrl => (Modifiers & MOD_CTRL) == MOD_CTRL;
 		public bool HasShift => (Modifiers & MOD_SHIFT) == MOD_SHIFT;
 		public bool HasWin => (Modifiers & MOD_WIN) == MOD_WIN;
-		public Keystroke(uint vk)
-		{
-			Vk = vk;
-			Modifiers = MOD_NOREPEAT;
-		}
-		public Keystroke(uint vk, uint modifiers)
-		{
-			Vk = vk;
-			Modifiers = modifiers;
-		}
 		public Keystroke(uint vk, bool ctrl, bool alt, bool shift, bool win)
 		{
 			Vk = vk;
@@ -88,20 +77,19 @@ namespace Hotkeys.Hk
 				{
 					sb.Append("Win");
 				}
-				sb.Append("+");
-				sb.Append(((Keys)Vk).ToString());
+				sb.Append('+');
+				sb.Append(Program.VkCodeToName[Vk]);
 				return sb.ToString();
 			}
-			return "";
+			return string.Empty;
 		}
 		public override bool Equals(object? obj)
 		{
 			return obj is Keystroke keystroke && Equals(keystroke);
 		}
-		public bool Equals([AllowNull] Keystroke other)
+		public bool Equals(Keystroke other)
 		{
-			return Vk == other.Vk &&
-				   Modifiers == other.Modifiers;
+			return Vk == other.Vk && Modifiers == other.Modifiers;
 		}
 		public override int GetHashCode()
 		{
