@@ -9,11 +9,6 @@
 	/// </summary>
 	public sealed class Chord : IEquatable<Chord>
 	{
-		public Keystroke Keystroke { get; }
-		public int Id { get; private set; }
-		public string Name { get; set; }
-		public bool IsRegistered { get; private set; }
-		public InvokeTarget InvokeTarget { get;  }
 		/// <summary>
 		/// Constructs a new instance of a Chord
 		/// </summary>
@@ -26,10 +21,14 @@
 			Keystroke = keystroke;
 			InvokeTarget = invokeTarget;
 		}
+		public Keystroke Keystroke { get; }
+		public int Id { get; }
+		public string Name { get; }
+		public bool IsRegistered { get; private set; }
+		public InvokeTarget InvokeTarget { get; }
 		/// <summary>
 		/// Invokes the chord
 		/// </summary>
-		/// <param name="promptKeyValues">Any responses to prompts required by this chord</param>
 		public Result<Process?, ProcErrorCode> GetProcess(string clipboard = "")
 		{
 			return InvokeTarget.GetProcess(clipboard);

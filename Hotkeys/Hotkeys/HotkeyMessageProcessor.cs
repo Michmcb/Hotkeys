@@ -22,8 +22,7 @@
 		private readonly ChordProcessor chordProcessor;
 		private readonly string hotkeyLoadFile;
 		private bool chordFree;
-		private IDictionary<int, Hotkey> loadedHotkeys;
-		public bool CurrentlyRegistered { get;private set; }
+		private Dictionary<int, Hotkey> loadedHotkeys;
 		public HotkeyMessageProcessor(string hotkeyLoadFile, bool autoLoad)
 		{
 			InitializeComponent();
@@ -56,13 +55,14 @@
 			notifyIcon.Visible = true;
 			notifyIcon.Text = "Hotkeys";
 
-			loadedHotkeys = new Dictionary<int, Hotkey>();
+			loadedHotkeys = [];
 			this.hotkeyLoadFile = hotkeyLoadFile;
 			if (autoLoad)
 			{
 				LoadAndRegister(this, EventArgs.Empty);
 			}
 		}
+		public bool CurrentlyRegistered { get; private set; }
 		private void SetContextMenuState(bool areHotkeysLoaded, bool areHotkeysRegistered)
 		{
 			if (areHotkeysLoaded)
@@ -129,7 +129,7 @@
 		{
 			if (loadedHotkeys != null)
 			{
-				StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new();
 				foreach (Hotkey hk in loadedHotkeys.Values)
 				{
 					sb.AppendLine(hk.ToString() + ". Currently " + (hk.IsRegistered ? "Active" : "Inactive"));

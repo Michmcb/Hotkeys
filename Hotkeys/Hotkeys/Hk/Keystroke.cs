@@ -12,12 +12,6 @@
 		public const uint MOD_SHIFT = 0x04;
 		public const uint MOD_WIN = 0x08;
 		public const uint MOD_NOREPEAT = 0x4000;
-		public uint Vk { get; }
-		public uint Modifiers { get; }
-		public bool HasAlt => (Modifiers & MOD_ALT) == MOD_ALT;
-		public bool HasCtrl => (Modifiers & MOD_CTRL) == MOD_CTRL;
-		public bool HasShift => (Modifiers & MOD_SHIFT) == MOD_SHIFT;
-		public bool HasWin => (Modifiers & MOD_WIN) == MOD_WIN;
 		public Keystroke(uint vk, bool ctrl, bool alt, bool shift, bool win)
 		{
 			Vk = vk;
@@ -56,11 +50,17 @@
 			}
 			Vk = (uint)(key & Keys.KeyCode);
 		}
+		public uint Vk { get; }
+		public uint Modifiers { get; }
+		public bool HasAlt => (Modifiers & MOD_ALT) == MOD_ALT;
+		public bool HasCtrl => (Modifiers & MOD_CTRL) == MOD_CTRL;
+		public bool HasShift => (Modifiers & MOD_SHIFT) == MOD_SHIFT;
+		public bool HasWin => (Modifiers & MOD_WIN) == MOD_WIN;
 		public override string ToString()
 		{
 			if (Modifiers != 0)
 			{
-				StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new();
 				if (HasAlt)
 				{
 					sb.Append("Alt");
@@ -95,13 +95,7 @@
 		{
 			return HashCode.Combine(Vk, Modifiers);
 		}
-		public static bool operator ==(Keystroke left, Keystroke right)
-		{
-			return left.Equals(right);
-		}
-		public static bool operator !=(Keystroke left, Keystroke right)
-		{
-			return !(left == right);
-		}
+		public static bool operator ==(Keystroke left, Keystroke right) => left.Equals(right);
+		public static bool operator !=(Keystroke left, Keystroke right) => !(left == right);
 	}
 }

@@ -5,17 +5,17 @@
 	public sealed class InvokeTarget
 	{
 		private readonly bool hasClipboard;
-		public InvokeTarget(string path, string args, string dir, bool shell)
+		public InvokeTarget(string path, string? args, string? dir, bool shell)
 		{
 			Path = path;
 			Args = args;
 			Dir = dir;
 			Shell = shell;
-			hasClipboard = args.Contains("{clipboard}");
+			hasClipboard = args != null && args.Contains("{clipboard}");
 		}
 		public string Path { get; }
-		public string Args { get; }
-		public string Dir { get; }
+		public string? Args { get; }
+		public string? Dir { get; }
 		public bool Shell { get; }
 		/// <summary>
 		/// Returns a process that can be started, which is synonymous with invoking the trigger
@@ -27,15 +27,9 @@
 			{
 				return new Result<Process?, ProcErrorCode>(null, ProcErrorCode.FileNotFound);
 			}
-			StringBuilder args;
-			if (hasClipboard)
-			{
-				args = new StringBuilder(Args.Replace("{clipboard}", clipboard));
-			}
-			else
-			{
-				args = new StringBuilder(Args);
-			}
+			StringBuilder args = hasClipboard && Args != null
+				? new StringBuilder(Args.Replace("{clipboard}", clipboard))
+				: new StringBuilder(Args);
 			ProcessStartInfo info;
 			string argsToUse = args.ToString();
 			info = argsToUse.Length != 0 ? new ProcessStartInfo(Path, argsToUse) : new ProcessStartInfo(Path);
@@ -44,7 +38,7 @@
 				info.WorkingDirectory = Dir;
 			}
 
-			Process p = new Process
+			Process p = new()
 			{
 				StartInfo = info
 			};

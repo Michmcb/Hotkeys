@@ -31,7 +31,7 @@
 			{
 				DialogResult = DialogResult.OK;
 				Keys withoutMods = keyData & ~Keys.Modifiers;
-				Keystroke hkm = new Keystroke(keyData);
+				Keystroke hkm = new(keyData);
 				if (ForHotkey.Chords.TryGetValue(hkm, out Chord? ch))
 				{
 					ChordHit?.Invoke(ch);

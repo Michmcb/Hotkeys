@@ -3,13 +3,13 @@
 	using System;
 	using System.Runtime.InteropServices;
 
-	internal static class NativeMethods
+	internal static partial class NativeMethods
 	{
-		[DllImport("user32.dll")]
+		[LibraryImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		internal static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-		[DllImport("user32.dll")]
+		internal static partial bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+		[LibraryImport("user32.dll")]
 		[return: MarshalAs(UnmanagedType.Bool)]
-		internal static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+		internal static partial bool UnregisterHotKey(IntPtr hWnd, int id);
 	}
 }

@@ -1,14 +1,14 @@
 # Hotkeys
 A helper program that can invoke global hotkeys and chords
 
-Chords, basically, you press a global hotkey, and can then press a second key combination to invoke a chord.
+Chords: Basically, you press a global hotkey, and can then press a second key combination to invoke a chord.
 
 Because hotkeys are global to the computer, you can't take anything that's already taken. But chords are local to the Hotkeys program, so they only need to be unique for their parent hotkey.
 
-You also can't define a hotkey to use F12.
+You also can't define a hotkey to use F12. This is a Windows restriction.
 
 # Configuration File
-Hotkeys are defined by a hotkeys.cfg file which should be passed to Hotkeys.exe when it is run. There's an example in this directory.
+Hotkeys are defined by a hotkeys.ini file. The path to this file must be passed to Hotkeys.exe when it is run. There's an example in this directory.
 
 ## type
 Can be any of the below

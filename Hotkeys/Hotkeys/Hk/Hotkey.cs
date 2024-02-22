@@ -12,16 +12,6 @@
 	{
 		private readonly IntPtr hWnd;
 		private readonly Dictionary<Keystroke, Chord> chords;
-		public Keystroke Keystroke { get; }
-		public int Id { get; private set; }
-		public string Name { get; set; }
-		public bool IsRegistered { get; private set; }
-		public IReadOnlyDictionary<Keystroke, Chord> Chords => chords;
-		public InvokeTarget? InvokeTarget { get; private set; }
-		/// <summary>
-		/// If the hotkey has multiple chords, true. Otherwise, false.
-		/// </summary>
-		public bool HasChords => InvokeTarget == null;
 		/// <summary>
 		/// Constructs a new instance of Hotkey
 		/// </summary>
@@ -31,11 +21,21 @@
 		{
 			Id = HotkeyId.GetNextId();
 			IsRegistered = false;
-			chords = new Dictionary<Keystroke, Chord>();
+			chords = [];
 			Name = name;
 			Keystroke = keystroke;
 			this.hWnd = hWnd;
 		}
+		public Keystroke Keystroke { get; }
+		public int Id { get; }
+		public string Name { get; }
+		public bool IsRegistered { get; private set; }
+		public IReadOnlyDictionary<Keystroke, Chord> Chords => chords;
+		public InvokeTarget? InvokeTarget { get; private set; }
+		/// <summary>
+		/// If the hotkey has multiple chords, true. Otherwise, false.
+		/// </summary>
+		public bool HasChords => InvokeTarget == null;
 		/// <summary>
 		/// Sets the single target that will be invoked when this hotkey is pressed.
 		/// The chord will not require any extra keypresses; it will be invoked straight away.
@@ -94,35 +94,15 @@
 			return !IsRegistered;
 		}
 		/// <summary>
-		/// Gets the Process that should be invoked for this Hotkey, using the provided <paramref name="chordProcessor"/> to
-		/// get the specific Chord the user wants to invoke
-		/// </summary>
-		/// <param name="chordKeystroke">The Chord's keystroke</param>
-		public Result<Process?, ProcErrorCode> GetProc(Keystroke chordKeystroke, string clipboard)
-		{
-			if (InvokeTarget != null)
-			{
-				throw new InvalidOperationException("Cannot call GetProc if property SingleChord is not null");
-			}
-			// If the chord is null, that means the user doesn't want to invoke anything after all
-			if (chords.TryGetValue(chordKeystroke, out Chord? chord))
-			{
-				return chord.GetProcess(clipboard);
-			}
-			return new Result<Process?, ProcErrorCode>(null, ProcErrorCode.UserCancelled);
-		}
-		/// <summary>
 		/// Gets the Process that should be invoked for this Hotkey, assuming the user doesn't have to press
 		/// any extra Chords.
 		/// </summary>
 		/// <param name="clipboard">The contents of the clipboard</param>
 		public Result<Process?, ProcErrorCode> GetSingleProc(string clipboard)
 		{
-			if (InvokeTarget == null)
-			{
-				throw new InvalidOperationException("Cannot call GetSingleProc if property SingleChord is null");
-			}
-			return InvokeTarget.GetProcess(clipboard);
+			return InvokeTarget == null
+				? throw new InvalidOperationException("Cannot call GetSingleProc if property SingleChord is null")
+				: InvokeTarget.GetProcess(clipboard);
 		}
 		public override string ToString()
 		{
