@@ -25,8 +25,9 @@
 			var acceptors = b.Acceptors;
 			b = null!;
 			Hotkey? lastSeenHk = null;
-			while (iniReader.TryReadNext(out var sec))
+			while (iniReader.NextSection())
 			{
+				var sec = iniReader.Section;
 				Util.ResetAll(acceptors.Values);
 				sec.AcceptAll(acceptors).ThrowIfError();
 				if (string.IsNullOrEmpty(type.Value)) { throw new IniException(IniErrorCode.ValueMissing, "The type property is required for section " + sec.Name); }
